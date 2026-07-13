@@ -84,8 +84,9 @@ plot_array <- function(arr, title) {
 }
 
 
+
 #######################################
-# Compile all reproyection functions
+# Compile all reprojection functions
 
 # Conversions from Linear to other projections
 sourceCpp("linear2cylindrical.cpp")
@@ -101,8 +102,6 @@ sourceCpp("stereographic2linear.cpp")
 
 #######################################
 # Examples
-
-
 
 # Example 1: neighbourhood park with smartphone UWA (13mm FF eq.)
 img=readTIFF("linear_13mm.tif")
