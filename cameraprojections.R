@@ -1,4 +1,4 @@
-# Linear to Cylindrical, Equirectangular, Mercator, Panini, Spherical and Stereographic camera projections
+# Linear to Cylindrical, Equirectangular, Mercator, Panini, Spherical and Stereographic camera reprojections
 # www.overfitting.net
 # https://www.overfitting.net/
 
@@ -322,7 +322,7 @@ writeTIFF(stereographic_12mm, "spheres12mm_stereographic.tif")
 
 # Example 4: Cervino 18mm (picture by Javier Camacho Gimeno)
 img=readTIFF("cervino18mm.tif")
-img=add_grid(img, n_gridx = 12, colour = c(1,1,0), linewidth = 3)
+img=add_grid(img, n_gridx = 12, colour = c(1,1,0), linewidth = 2)
 writeTIFF(img, "cervino18mm_grid.tif")
 
 cylindrical_18mm <- linear_to_cylindrical_rcpp(img, fl_FF_mm = 18)
