@@ -234,12 +234,12 @@ add_grid <- function(img, n_gridx = 12, linewidth = 4, colour = c(1, 1, 0), diag
 # Compile all reprojection functions
 
 # Conversions from Linear to other projections
-sourceCpp("linear2cylindrical.cpp")  # NO diagonal
-sourceCpp("linear2equirectangular.cpp")  # NO diagonal
-sourceCpp("linear2mercator.cpp")  # conforme respecto a esfera 3D, NO diagonal
-sourceCpp("linear2panini.cpp")  # SÍ diagonal
-sourceCpp("linear2spherical.cpp")  # SÍ diagonal
-sourceCpp("linear2stereographic.cpp")  # conforme respecto a esfera 3D, SÍ diagonal
+sourceCpp("linear2cylindrical.cpp")  # preserves vertical lines
+sourceCpp("linear2equirectangular.cpp")  # preserves vertical lines
+sourceCpp("linear2mercator.cpp")  # preserves vertical lines, conformal vs 3D sphere, restores spheres as circles
+sourceCpp("linear2panini.cpp")  # preserves vertical and radial lines
+sourceCpp("linear2spherical.cpp")  # preserves radial lines
+sourceCpp("linear2stereographic.cpp")  # preserves radial lines, conformal vs 3D sphere, restores spheres as circles
 
 
 # Back to Linear projections (useful to check if perfect circles become ellipses)
