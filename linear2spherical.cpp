@@ -4,7 +4,7 @@
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-NumericVector linear_to_spherical_perspective_rcpp(NumericVector img, double fl_FF_mm) {
+NumericVector linear_to_spherical_rcpp(NumericVector img, double fl_FF_mm) {
     // Proyección radial. En geometría visual y fotografía, a esto se le llama Proyección Azimutal Equidistante
     // (frecuentemente conocida como Equidistant Fisheye o una verdadera Perspectiva Esférica Curvilínea)
     

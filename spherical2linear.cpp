@@ -4,7 +4,7 @@
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-NumericVector spherical_perspective_to_linear_rcpp(NumericVector img, double fl_FF_mm) {
+NumericVector spherical_to_linear_rcpp(NumericVector img, double fl_FF_mm) {
     IntegerVector dims = img.attr("dim");
     if (dims.size() != 3) {
         stop("Input image must be a 3D array (M x N x 3).");

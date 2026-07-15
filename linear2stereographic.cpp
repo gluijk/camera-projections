@@ -5,8 +5,9 @@ using namespace Rcpp;
 
 // [[Rcpp::export]]
 NumericVector linear_to_stereographic_rcpp(NumericVector img, double fl_FF_mm) {
-    // Proyección Estereográfica (Conforme)
-    // Mantiene las formas circulares perfectas en los bordes (evita anamorfosis de volumen)
+	// Mercator/Stereographic son proyecciones conformes = tienen la propiedad de conservación de ángulos locales respecto a la esfera 3D
+	// En una proyección conforme, cualquier forma infinitesimal (como una pequeña esfera o un círculo en la superficie terrestre)
+	// se mantiene como una forma similar en el mapa
     
     IntegerVector dims = img.attr("dim");
     if (dims.size() != 3) {
