@@ -302,7 +302,7 @@ img=add_grid(img, n_gridx = 12, colour = c(0,1,1))
 writeTIFF(img, "spheres12mm_grid.tif")
 
 # Spherical with 16mm is almost equivalent to stereographic with 13.3mm
-# but only Mercator and stereographic are conformal
+# but only Mercator and stereographic seemt to restore spheres as circles
 
 cylindrical_12mm <- linear_to_cylindrical_rcpp(img, fl_FF_mm = 12)
 equirectangular_12mm <- linear_to_equirectangular_rcpp(img, fl_FF_mm = 12)
