@@ -12,11 +12,7 @@ library(tiff)
 # Generate equispaced circles
 circles_matrix <- function(NUMX, NUMY, DIMX, R = 1, value.circle = 0.7, value.background = 0.3)
 {
-    stopifnot(NUMX >= 1,
-              NUMY >= 1,
-              DIMX >= NUMX,
-              R >= 0,
-              R <= 1)
+    stopifnot(NUMX >= 1, NUMY >= 1, DIMX >= NUMX, R >= 0, R <= 1)
     
     # Resolución vertical
     DIMY <- round(DIMX * NUMY / NUMX)
