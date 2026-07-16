@@ -1,4 +1,5 @@
-# Linear to Cylindrical, Equirectangular, Mercator, Panini, Spherical and Stereographic camera reprojections
+# Linear to Cylindrical, Equirectangular, Mercator, Panini, Spherical
+# and Stereographic camera reprojections
 # www.overfitting.net
 # https://www.overfitting.net/
 
@@ -233,11 +234,12 @@ add_grid <- function(img, n_gridx = 12, linewidth = 4, colour = c(1, 1, 0), diag
 #######################################
 # Compile all reprojection functions
 
-# Conversions from Linear to other projections
+# Conversions from Linear (Pinhole camera projection) to other projections...
 sourceCpp("linear2cylindrical.cpp")  # preserves vertical lines
 sourceCpp("linear2equirectangular.cpp")  # preserves vertical lines
 sourceCpp("linear2mercator.cpp")  # preserves vertical lines, conformal vs 3D sphere, restores spheres as circles
 sourceCpp("linear2panini.cpp")  # preserves vertical and radial lines
+sourceCpp("linear2orthographic.cpp")  # preserves radial lines
 sourceCpp("linear2spherical.cpp")  # preserves radial lines
 sourceCpp("linear2stereographic.cpp")  # preserves radial lines, conformal vs 3D sphere, restores spheres as circles
 
@@ -262,6 +264,7 @@ cylindrical_12mm <- linear_to_cylindrical_rcpp(img, fl_FF_mm = 12)
 equirectangular_12mm <- linear_to_equirectangular_rcpp(img, fl_FF_mm = 12)
 mercator_12mm <- linear_to_mercator_rcpp(img, fl_FF_mm = 12)
 panini_12mm <- linear_to_panini_rcpp(img, fl_FF_mm = 12)
+orthographic_12mm <- linear_to_orthographic_rcpp(img, fl_FF_mm = 12)
 spherical_12mm <- linear_to_spherical_rcpp(img, fl_FF_mm = 12)
 stereographic_12mm <- linear_to_stereographic_rcpp(img, fl_FF_mm = 12)
 
@@ -269,6 +272,7 @@ writeTIFF(cylindrical_12mm, "laowa12mm_cylindrical.tif")
 writeTIFF(equirectangular_12mm, "laowa12mm_equirectangular.tif")
 writeTIFF(mercator_12mm, "laowa12mm_mercator.tif")
 writeTIFF(panini_12mm, "laowa12mm_panini.tif")
+writeTIFF(orthographic_12mm, "laowa12mm_orthographic.tif")
 writeTIFF(spherical_12mm, "laowa12mm_spherical.tif")
 writeTIFF(stereographic_12mm, "laowa12mm_stereographic.tif")
 
@@ -302,12 +306,13 @@ img=add_grid(img, n_gridx = 12, colour = c(0,1,1))
 writeTIFF(img, "spheres12mm_grid.tif")
 
 # Spherical with 16mm is almost equivalent to stereographic with 13.3mm
-# but only Mercator and stereographic seemt to restore spheres as circles
+# but only Mercator (locally) and stereographic restore spheres as circles
 
 cylindrical_12mm <- linear_to_cylindrical_rcpp(img, fl_FF_mm = 12)
 equirectangular_12mm <- linear_to_equirectangular_rcpp(img, fl_FF_mm = 12)
 mercator_12mm <- linear_to_mercator_rcpp(img, fl_FF_mm = 13.3)  # 13.3 restores spheres as circles better
 panini_12mm <- linear_to_panini_rcpp(img, fl_FF_mm = 12)
+orthographic_12mm <- linear_to_orthographic_rcpp(img, fl_FF_mm = 12)
 spherical_12mm <- linear_to_spherical_rcpp(img, fl_FF_mm = 12)  # 16mm would restore spheres as circles
 stereographic_12mm <- linear_to_stereographic_rcpp(img, fl_FF_mm = 13.3)  # 13.3 restores spheres as circles better
 
@@ -315,6 +320,7 @@ writeTIFF(cylindrical_12mm, "spheres12mm_cylindrical.tif")
 writeTIFF(equirectangular_12mm, "spheres12mm_equirectangular.tif")
 writeTIFF(mercator_12mm, "spheres12mm_mercator.tif")
 writeTIFF(panini_12mm, "spheres12mm_panini.tif")
+writeTIFF(orthographic_12mm, "spheres12mm_orthographic.tif")
 writeTIFF(spherical_12mm, "spheres12mm_spherical.tif")
 writeTIFF(stereographic_12mm, "spheres12mm_stereographic.tif")
 
