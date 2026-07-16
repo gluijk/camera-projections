@@ -1,4 +1,4 @@
-# Linear to Cylindrical, Equirectangular, Mercator, Panini, Spherical
+# Linear (Pinhole camera) to Cylindrical, Equirectangular, Mercator, Panini, Orthographic, Spherical
 # and Stereographic camera reprojections
 # www.overfitting.net
 # https://www.overfitting.net/
@@ -234,7 +234,7 @@ add_grid <- function(img, n_gridx = 12, linewidth = 4, colour = c(1, 1, 0), diag
 #######################################
 # Compile all reprojection functions
 
-# Conversions from Linear (Pinhole camera projection) to other projections...
+# Conversions from Linear (Pinhole camera) to other projections...
 sourceCpp("linear2cylindrical.cpp")  # preserves vertical lines
 sourceCpp("linear2equirectangular.cpp")  # preserves vertical lines
 sourceCpp("linear2mercator.cpp")  # preserves vertical lines, conformal vs 3D sphere, restores spheres as circles
