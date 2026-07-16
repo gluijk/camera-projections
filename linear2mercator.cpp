@@ -8,6 +8,11 @@ NumericVector linear_to_mercator_rcpp(NumericVector img, double fl_FF_mm) {
 	// Mercator/Stereographic son proyecciones conformes = tienen la propiedad de conservación de ángulos locales respecto a la esfera 3D
 	// En una proyección conforme, cualquier forma infinitesimal (como una pequeña esfera o un círculo en la superficie terrestre)
 	// se mantiene como una forma similar en el mapa
+	// For your specific application, there is a spectrum:
+	// * Very small spheres (a few pixels or a few degrees): Mercator is effectively circle-restoring
+	// * Moderately sized spheres: stereographic will be noticeably more accurate
+	// * Large spheres (e.g. a person's head occupying much of the frame): Mercator will begin to leave a measurable residual ellipticity,
+	//   whereas stereographic will still produce a perfect circle (assuming the ellipse truly arose from the perspective projection of a sphere)
     
 	IntegerVector dims = img.attr("dim");
     if (dims.size() != 3) {

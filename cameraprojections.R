@@ -248,7 +248,7 @@ sourceCpp("stereographic2linear.cpp")
 
 
 #######################################
-# Exercises (4)
+# EXERCISES (3)
 
 
 # Example 1: landscape with Laowa 12mm FF (Dpreview)
@@ -275,8 +275,8 @@ writeTIFF(stereographic_12mm, "laowa12mm_stereographic.tif")
 
 
 # Example 2: synthetic circles for Mercator/Spherical/Stereographic to Linear transformation and back
-img=circles_matrix(12, 8, 1920*4, R = 0.5)
-img=add_grid(img, n_gridx = 12, colour = c(0,1,1), linewidth = 3)
+img=circles_matrix(12, 8, 1920*2, R = 0.5)
+img=add_grid(img, n_gridx = 12, colour = c(0,1,1), linewidth = 4)
 writeTIFF(img, "circles12mm_grid.tif")
 
 linear_12mm <- mercator_to_linear_rcpp(img, fl_FF_mm = 12)
@@ -322,10 +322,34 @@ writeTIFF(stereographic_12mm, "spheres12mm_stereographic.tif")
 
 
 
-# Example 4: Cervino 18mm (picture by Javier Camacho Gimeno)
+
+#######################################
+# USE CASES (3)
+
+# Use case 1: Cervino 18mm (picture by Javier Camacho Gimeno)
 img=readTIFF("cervino18mm.tif")
-img=add_grid(img, n_gridx = 12, colour = c(1,1,0), linewidth = 2)
-writeTIFF(img, "cervino18mm_grid.tif")
+# img=add_grid(img, n_gridx = 12, colour = c(1,1,0), linewidth = 2)
+# writeTIFF(img, "cervino18mm_grid.tif")
 
 cylindrical_18mm <- linear_to_cylindrical_rcpp(img, fl_FF_mm = 18)
 writeTIFF(cylindrical_18mm, "cervino18mm_cylindrical.tif")
+
+
+
+# Use case 2: real spheres
+img=readTIFF("spheres12mm.tif")
+# img=add_grid(img, n_gridx = 12, colour = c(0,1,1))
+# writeTIFF(img, "spheres12mm_grid.tif")
+
+stereographic_12mm <- linear_to_stereographic_rcpp(img, fl_FF_mm = 13.3)  # 13.3 restores spheres as circles better
+writeTIFF(stereographic_12mm, "spheres12mm_stereographic.tif")
+
+
+
+# Use case 3: Panini projection in scene with central vanishing point
+img=readTIFF("street12mm.tif")
+# img=add_grid(img, n_gridx = 12, colour = c(1,1,0), linewidth = 4)
+# writeTIFF(img, "street12mm_grid.tif")
+
+panini_12mm <- linear_to_panini_rcpp(img, fl_FF_mm = 12, d = 0.7)  # d = 1 too much compression
+writeTIFF(panini_12mm, "street12mm_panini.tif")
