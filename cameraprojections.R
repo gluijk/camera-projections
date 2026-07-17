@@ -1,7 +1,7 @@
 # Linear (Pinhole camera) to Cylindrical, Equirectangular, Mercator, Panini, Spherical, Orthographic 
 # and Stereographic camera reprojections
 # www.overfitting.net
-# https://www.overfitting.net/
+# https://www.overfitting.net/2026/07/mejorando-fotografias-ultraangulares.html
 
 library(Rcpp)
 library(tiff)
