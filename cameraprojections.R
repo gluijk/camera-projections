@@ -1,4 +1,4 @@
-# Linear (Pinhole camera) to Cylindrical, Equirectangular, Mercator, Panini, Orthographic, Spherical
+# Linear (Pinhole camera) to Cylindrical, Equirectangular, Mercator, Panini, Spherical, Orthographic 
 # and Stereographic camera reprojections
 # www.overfitting.net
 # https://www.overfitting.net/
