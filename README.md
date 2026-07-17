@@ -1,5 +1,5 @@
 # camera-projections
-Linear (Pinhole camera) to Cylindrical, Equirectangular, Mercator, Panini, Orthographic, Spherical and Stereographic camera reprojections
+Linear (Pinhole camera) to Cylindrical, Equirectangular, Mercator, Panini, Spherical, Orthographic and Stereographic camera reprojections
 
 ![camera-projections](/cervino18mm.gif)
 
