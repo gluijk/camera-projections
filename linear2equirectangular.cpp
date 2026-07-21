@@ -4,7 +4,7 @@
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-NumericVector linear_to_equirectangular_rcpp(NumericVector img, double fl_FF_mm) {
+NumericVector linear_to_equirectangular_rcpp(NumericVector img, double fl_FF_mm, double zoom = 1.0) {
     IntegerVector dims = img.attr("dim");
     if (dims.size() != 3) {
         stop("Input image must be a 3D array (M x N x 3).");
@@ -16,7 +16,10 @@ NumericVector linear_to_equirectangular_rcpp(NumericVector img, double fl_FF_mm)
     
     double diag_mm = std::sqrt(36.0 * 36.0 + 24.0 * 24.0); 
     double diag_pixel = std::sqrt((double)H_in * H_in + (double)W_in * W_in);
-    double f_pixel = fl_FF_mm * (diag_pixel / diag_mm);
+    
+    // Diferenciamos la focal de entrada y de salida aplicando el zoom
+    double f_pixel_in = fl_FF_mm * (diag_pixel / diag_mm);
+    double f_pixel_out = f_pixel_in * zoom;
     
     int H_out = H_in;
     int W_out = W_in;
@@ -29,10 +32,12 @@ NumericVector linear_to_equirectangular_rcpp(NumericVector img, double fl_FF_mm)
     NumericVector out_img(Dimension(H_out, W_out, channels));
     
     // Pre-calculate row-dependent trigonometric values for spherical projection (latitude / phi)
+    // Utilizamos f_pixel_out para establecer las coordenadas geométricas de salida
     std::vector<double> tan_phi_vals(H_out);
     std::vector<double> cos_phi_vals(H_out);
     for (int r_out = 0; r_out < H_out; ++r_out) {
-        double phi = (r_out - cy_out) / f_pixel;
+        // Usamos f_pixel_out para mapear la posición "Y" en la imagen de salida a latitud esférica
+        double phi = (r_out - cy_out) / f_pixel_out;
         tan_phi_vals[r_out] = std::tan(phi);
         cos_phi_vals[r_out] = std::cos(phi);
     }
@@ -48,7 +53,8 @@ NumericVector linear_to_equirectangular_rcpp(NumericVector img, double fl_FF_mm)
     for (int c_out = 0; c_out < W_out; ++c_out) {
         
         // --- Column Invariants Hoisted Here ---
-            double theta = (c_out - cx_out) / f_pixel;
+            // Usamos f_pixel_out para mapear la posición "X" en la imagen de salida a longitud esférica
+            double theta = (c_out - cx_out) / f_pixel_out;
             double cos_theta = std::cos(theta);
             
             // If cos(theta) <= 0, the ray points sideways or backwards horizontally.
@@ -65,7 +71,8 @@ NumericVector linear_to_equirectangular_rcpp(NumericVector img, double fl_FF_mm)
             double tan_theta = std::tan(theta);
             
             // In spherical projection, horizontal mapping (c_in) is INDEPENDENT of vertical angle (phi)
-            double c_in = f_pixel * tan_theta + cx_in;
+            // Trazamos el rayo hacia la imagen plana original usando f_pixel_in
+            double c_in = f_pixel_in * tan_theta + cx_in;
             
             int c0 = std::floor(c_in);
             int c1 = c0 + 1;
@@ -104,7 +111,8 @@ NumericVector linear_to_equirectangular_rcpp(NumericVector img, double fl_FF_mm)
                 }
                 
                 // Compute vertical projection: y_proj = tan(phi) / cos(theta)
-                double r_in = f_pixel * (tan_phi_vals[r_out] * inv_cos_theta) + cy_in;
+                // Proyectamos hacia las coordenadas verticales de la imagen plana original con f_pixel_in
+                double r_in = f_pixel_in * (tan_phi_vals[r_out] * inv_cos_theta) + cy_in;
                 
                 int r0 = std::floor(r_in);
                 int r1 = r0 + 1;

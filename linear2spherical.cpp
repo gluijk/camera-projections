@@ -4,7 +4,7 @@
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-NumericVector linear_to_spherical_rcpp(NumericVector img, double fl_FF_mm) {
+NumericVector linear_to_spherical_rcpp(NumericVector img, double fl_FF_mm, double zoom = 1.0) {
     // Proyección radial. En geometría visual y fotografía, a esto se le llama Proyección Azimutal Equidistante
     // (frecuentemente conocida como Equidistant Fisheye o una verdadera Perspectiva Esférica Curvilínea)
     
@@ -19,7 +19,11 @@ NumericVector linear_to_spherical_rcpp(NumericVector img, double fl_FF_mm) {
     
     double diag_mm = std::sqrt(36.0 * 36.0 + 24.0 * 24.0); 
     double diag_pixel = std::sqrt((double)H_in * H_in + (double)W_in * W_in);
-    double f_pixel = fl_FF_mm * (diag_pixel / diag_mm);
+    
+    // Diferenciamos la focal de la imagen original plana (in) de la focal proyectada con zoom (out)
+    // Utilizamos f_pixel_out para establecer las coordenadas geométricas de salida
+    double f_pixel_in = fl_FF_mm * (diag_pixel / diag_mm);
+    double f_pixel_out = f_pixel_in * zoom;
     
     int H_out = H_in;
     int W_out = W_in;
@@ -62,8 +66,8 @@ NumericVector linear_to_spherical_rcpp(NumericVector img, double fl_FF_mm) {
             // Distancia radial desde el centro
             double R_out = std::sqrt(x_out_sq + y_out_sq[r_out]);
             
-            // Ángulo incidente desde el eje óptico
-            double theta = R_out / f_pixel;
+            // Ángulo incidente desde el eje óptico en la proyección esférica de salida
+            double theta = R_out / f_pixel_out;
             
             // Si el ángulo es >= 90 grados (aprox 1.5708 rads), el rayo es paralelo 
             // al plano de la cámara o apunta hacia atrás. 
@@ -75,8 +79,9 @@ NumericVector linear_to_spherical_rcpp(NumericVector img, double fl_FF_mm) {
                 continue;
             }
             
-            // En una imagen de cámara oscura, la distancia radial responde a f * tan(theta)
-            double R_in = f_pixel * std::tan(theta);
+            // En una imagen de cámara oscura, la distancia radial responde a f * tan(theta).
+            // Lo mapeamos de vuelta a la imagen de entrada plana original usando f_pixel_in.
+            double R_in = f_pixel_in * std::tan(theta);
             
             // Factor de escala radial. Limite cuando R_out -> 0 es 1.0 (evita div por cero)
             double scale = (R_out > 1e-6) ? (R_in / R_out) : 1.0;

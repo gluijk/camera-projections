@@ -17,11 +17,10 @@ NumericVector linear_to_orthographic_rcpp(NumericVector img, double fl_FF_mm, do
     double diag_mm = std::sqrt(36.0 * 36.0 + 24.0 * 24.0); 
     double diag_pixel = std::sqrt((double)H_in * H_in + (double)W_in * W_in);
     
-    // The base focal length for sampling the input rectilinear image
-    double f_pixel = fl_FF_mm * (diag_pixel / diag_mm);
-    
-    // The scaled focal length for the output orthographic mapping
-    double f_pixel_zoom = f_pixel * zoom;
+    // Diferenciamos la focal de la imagen original plana (in) de la focal proyectada con zoom (out)
+    // Utilizamos f_pixel_out para establecer las coordenadas geométricas de salida
+    double f_pixel_in = fl_FF_mm * (diag_pixel / diag_mm);
+    double f_pixel_zoom = f_pixel_in * zoom;
     
     int H_out = H_in;
     int W_out = W_in;
@@ -90,8 +89,8 @@ NumericVector linear_to_orthographic_rcpp(NumericVector img, double fl_FF_mm, do
             double inv_Z = 1.0 / Z;
             
             // Compute intersection on the flat pinhole image plane using original f_pixel
-            double c_in = f_pixel * (X * inv_Z) + cx_in;
-            double r_in = f_pixel * (Y * inv_Z) + cy_in;
+            double c_in = f_pixel_in * (X * inv_Z) + cx_in;
+            double r_in = f_pixel_in * (Y * inv_Z) + cy_in;
             
             int c0 = std::floor(c_in);
             int c1 = c0 + 1;

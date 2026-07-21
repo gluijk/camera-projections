@@ -4,10 +4,10 @@
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-NumericVector linear_to_stereographic_rcpp(NumericVector img, double fl_FF_mm) {
-	// Mercator/Stereographic son proyecciones conformes = tienen la propiedad de conservación de ángulos locales respecto a la esfera 3D
-	// En una proyección conforme, cualquier forma infinitesimal (como una pequeña esfera o un círculo en la superficie terrestre)
-	// se mantiene como una forma similar en el mapa
+NumericVector linear_to_stereographic_rcpp(NumericVector img, double fl_FF_mm, double zoom = 1.0) {
+    // Mercator/Stereographic son proyecciones conformes = tienen la propiedad de conservación de ángulos locales respecto a la esfera 3D
+    // En una proyección conforme, cualquier forma infinitesimal (como una pequeña esfera o un círculo en la superficie terrestre)
+    // se mantiene como una forma similar en el mapa
     
     IntegerVector dims = img.attr("dim");
     if (dims.size() != 3) {
@@ -20,7 +20,11 @@ NumericVector linear_to_stereographic_rcpp(NumericVector img, double fl_FF_mm) {
     
     double diag_mm = std::sqrt(36.0 * 36.0 + 24.0 * 24.0); 
     double diag_pixel = std::sqrt((double)H_in * H_in + (double)W_in * W_in);
-    double f_pixel = fl_FF_mm * (diag_pixel / diag_mm);
+    
+    // Diferenciamos la focal de la imagen original plana (in) de la focal proyectada con zoom (out)
+    // Utilizamos f_pixel_out para establecer las coordenadas geométricas de salida
+    double f_pixel_in = fl_FF_mm * (diag_pixel / diag_mm);
+    double f_pixel_out = f_pixel_in * zoom;
     
     int H_out = H_in;
     int W_out = W_in;
@@ -32,7 +36,7 @@ NumericVector linear_to_stereographic_rcpp(NumericVector img, double fl_FF_mm) {
     
     NumericVector out_img(Dimension(H_out, W_out, channels));
     
-	// Precalculamos las distancias Y al cuadrado para acelerar la hipotenusa en el bucle interior
+    // Precalculamos las distancias Y al cuadrado para acelerar la hipotenusa en el bucle interior
     std::vector<double> y_out_vals(H_out);
     std::vector<double> y_out_sq(H_out);
     for (int r_out = 0; r_out < H_out; ++r_out) {
@@ -47,15 +51,15 @@ NumericVector linear_to_stereographic_rcpp(NumericVector img, double fl_FF_mm) {
     int in_channel_stride = H_in * W_in;
     int out_channel_stride = H_out * W_out;
     
-	// Bucle de columnas
+    // Bucle de columnas
     for (int c_out = 0; c_out < W_out; ++c_out) {
         
-		// --- Invariantes de la columna ---
+        // --- Invariantes de la columna ---
         double x_out = c_out - cx_out;
         double x_out_sq = x_out * x_out;
         int out_col_idx = H_out * c_out;
         
-		// Bucle de filas
+        // Bucle de filas
         for (int r_out = 0; r_out < H_out; ++r_out) {
             int out_pixel_idx = r_out + out_col_idx;
             double y_out = y_out_vals[r_out];
@@ -63,9 +67,9 @@ NumericVector linear_to_stereographic_rcpp(NumericVector img, double fl_FF_mm) {
             // Distancia radial desde el centro en la imagen Estereográfica (salida)
             double R_out = std::sqrt(x_out_sq + y_out_sq[r_out]);
             
-            // Ángulo incidente desde el eje óptico inverso usando el modelo Estereográfico:
-                // R = 2 * f * tan(theta / 2) -> theta = 2 * atan(R / (2 * f))
-            double theta = 2.0 * std::atan(R_out / (2.0 * f_pixel));
+            // Ángulo incidente desde el eje óptico inverso usando el modelo Estereográfico de salida:
+            // R = 2 * f * tan(theta / 2) -> theta = 2 * atan(R / (2 * f))
+            double theta = 2.0 * std::atan(R_out / (2.0 * f_pixel_out));
             
             // Límite de campo lineal (no podemos buscar datos más allá de 90 grados)
             if (theta >= 1.5707963267948966) {
@@ -76,7 +80,8 @@ NumericVector linear_to_stereographic_rcpp(NumericVector img, double fl_FF_mm) {
             }
             
             // En una imagen de cámara oscura rectilínea, R_in responde a f * tan(theta)
-            double R_in = f_pixel * std::tan(theta);
+            // Lo mapeamos de vuelta a la imagen de entrada plana original usando f_pixel_in.
+            double R_in = f_pixel_in * std::tan(theta);
             
             // Escala radial
             double scale = (R_out > 1e-6) ? (R_in / R_out) : 1.0;

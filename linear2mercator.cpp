@@ -4,17 +4,17 @@
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-NumericVector linear_to_mercator_rcpp(NumericVector img, double fl_FF_mm) {
-	// Mercator/Stereographic son proyecciones conformes = tienen la propiedad de conservación de ángulos locales respecto a la esfera 3D
-	// En una proyección conforme, cualquier forma infinitesimal (como una pequeña esfera o un círculo en la superficie terrestre)
-	// se mantiene como una forma similar en el mapa
-	// For your specific application, there is a spectrum:
-	// * Very small spheres (a few pixels or a few degrees): Mercator is effectively circle-restoring
-	// * Moderately sized spheres: stereographic will be noticeably more accurate
-	// * Large spheres (e.g. a person's head occupying much of the frame): Mercator will begin to leave a measurable residual ellipticity,
-	//   whereas stereographic will still produce a perfect circle (assuming the ellipse truly arose from the perspective projection of a sphere)
+NumericVector linear_to_mercator_rcpp(NumericVector img, double fl_FF_mm, double zoom = 1.0) {
+    // Mercator/Stereographic son proyecciones conformes = tienen la propiedad de conservación de ángulos locales respecto a la esfera 3D
+    // En una proyección conforme, cualquier forma infinitesimal (como una pequeña esfera o un círculo en la superficie terrestre)
+    // se mantiene como una forma similar en el mapa
+    // For your specific application, there is a spectrum:
+    // * Very small spheres (a few pixels or a few degrees): Mercator is effectively circle-restoring
+    // * Moderately sized spheres: stereographic will be noticeably more accurate
+    // * Large spheres (e.g. a person's head occupying much of the frame): Mercator will begin to leave a measurable residual ellipticity,
+    //   whereas stereographic will still produce a perfect circle (assuming the ellipse truly arose from the perspective projection of a sphere)
     
-	IntegerVector dims = img.attr("dim");
+    IntegerVector dims = img.attr("dim");
     if (dims.size() != 3) {
         stop("Input image must be a 3D array (M x N x 3).");
     }
@@ -25,7 +25,11 @@ NumericVector linear_to_mercator_rcpp(NumericVector img, double fl_FF_mm) {
     
     double diag_mm = std::sqrt(36.0 * 36.0 + 24.0 * 24.0); 
     double diag_pixel = std::sqrt((double)H_in * H_in + (double)W_in * W_in);
-    double f_pixel = fl_FF_mm * (diag_pixel / diag_mm);
+    
+    // Diferenciamos la focal de la imagen original plana (in) de la focal proyectada con zoom (out)
+    // Utilizamos f_pixel_out para establecer las coordenadas geométricas de salida
+    double f_pixel_in = fl_FF_mm * (diag_pixel / diag_mm);
+    double f_pixel_out = f_pixel_in * zoom;
     
     int H_out = H_in;
     int W_out = W_in;
@@ -42,8 +46,8 @@ NumericVector linear_to_mercator_rcpp(NumericVector img, double fl_FF_mm) {
     std::vector<double> cos_phi_vals(H_out);
     
     for (int r_out = 0; r_out < H_out; ++r_out) {
-        // 'v' es la coordenada vertical normalizada en el plano de Mercator
-        double v = (r_out - cy_out) / f_pixel;
+        // 'v' es la coordenada vertical normalizada en el plano de Mercator, usando f_pixel_out
+        double v = (r_out - cy_out) / f_pixel_out;
         
         // Optimización hiperbólica de la función Gudermanniana inversa
         tan_phi_vals[r_out] = std::sinh(v);
@@ -61,7 +65,8 @@ NumericVector linear_to_mercator_rcpp(NumericVector img, double fl_FF_mm) {
     for (int c_out = 0; c_out < W_out; ++c_out) {
         
         // --- Column Invariants Hoisted Here ---
-        double theta = (c_out - cx_out) / f_pixel;
+        // Coordenada horizontal basada en la focal de salida
+        double theta = (c_out - cx_out) / f_pixel_out;
         double cos_theta = std::cos(theta);
         
         // If cos(theta) <= 0, the ray points sideways or backwards horizontally.
@@ -78,7 +83,8 @@ NumericVector linear_to_mercator_rcpp(NumericVector img, double fl_FF_mm) {
         double tan_theta = std::tan(theta);
         
         // In Mercator/Cylindrical, horizontal mapping (c_in) is INDEPENDENT of vertical angle
-        double c_in = f_pixel * tan_theta + cx_in;
+        // Mapeamos el ángulo de nuevo hacia la imagen de entrada con su focal f_pixel_in
+        double c_in = f_pixel_in * tan_theta + cx_in;
         
         int c0 = std::floor(c_in);
         int c1 = c0 + 1;
@@ -118,7 +124,8 @@ NumericVector linear_to_mercator_rcpp(NumericVector img, double fl_FF_mm) {
             }
             
             // Compute vertical projection: y_proj = tan(phi) / cos(theta)
-            double r_in = f_pixel * (tan_phi_vals[r_out] * inv_cos_theta) + cy_in;
+            // Proyectamos hacia las coordenadas verticales de la imagen plana de entrada
+            double r_in = f_pixel_in * (tan_phi_vals[r_out] * inv_cos_theta) + cy_in;
             
             int r0 = std::floor(r_in);
             int r1 = r0 + 1;

@@ -4,9 +4,9 @@
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-NumericVector stereographic_to_linear_rcpp(NumericVector img, double fl_FF_mm) {
-    // Proyección Lineal (Cámara Oscura) a partir de Estereográfica.
-    // Transforma una imagen estereográfica de vuelta a la perspectiva rectilínea estándar.
+NumericVector stereographic_to_linear_rcpp(NumericVector img, double fl_FF_mm, double zoom = 1.0) {
+    // Proyección Lineal (Cámara Oscura) a partir de Estereográfica
+    // Transforma una imagen estereográfica de vuelta a la perspectiva rectilínea estándar
     
     IntegerVector dims = img.attr("dim");
     if (dims.size() != 3) {
@@ -19,7 +19,11 @@ NumericVector stereographic_to_linear_rcpp(NumericVector img, double fl_FF_mm) {
     
     double diag_mm = std::sqrt(36.0 * 36.0 + 24.0 * 24.0); 
     double diag_pixel = std::sqrt((double)H_in * H_in + (double)W_in * W_in);
-    double f_pixel = fl_FF_mm * (diag_pixel / diag_mm);
+    
+    // Diferenciamos la focal de la imagen original plana (in) de la focal proyectada con zoom (out)
+    // Utilizamos f_pixel_out para establecer las coordenadas geométricas de salida
+    double f_pixel_in = fl_FF_mm * (diag_pixel / diag_mm);
+    double f_pixel_out = f_pixel_in * zoom;
     
     int H_out = H_in;
     int W_out = W_in;
@@ -58,15 +62,16 @@ NumericVector stereographic_to_linear_rcpp(NumericVector img, double fl_FF_mm) {
             // Distancia radial desde el centro en la imagen Lineal (salida)
             double R_out = std::sqrt(x_out_sq + y_out_sq[r_out]);
             
-            // Ángulo incidente desde el eje óptico inverso usando el modelo Lineal (perspectiva):
+            // Ángulo incidente desde el eje óptico inverso usando el modelo Lineal (perspectiva) de salida:
             // R = f * tan(theta) -> theta = atan(R / f)
-            double theta = std::atan(R_out / f_pixel);
+            double theta = std::atan(R_out / f_pixel_out);
             
             // Nota: En la conversión inversa, R_out siempre producirá un theta < pi/2 (90 grados),
             // por lo que no es necesario el chequeo limitante explícito que usamos en linear_to_stereographic.
             
             // En una imagen estereográfica (entrada), R_in responde a 2 * f * tan(theta / 2)
-            double R_in = 2.0 * f_pixel * std::tan(theta / 2.0);
+            // Lo mapeamos de vuelta a la imagen de entrada usando f_pixel_in
+            double R_in = 2.0 * f_pixel_in * std::tan(theta / 2.0);
             
             // Escala radial
             double scale = (R_out > 1e-6) ? (R_in / R_out) : 1.0;

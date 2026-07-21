@@ -4,7 +4,7 @@
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-NumericVector linear_to_cylindrical_rcpp(NumericVector img, double fl_FF_mm) {
+NumericVector linear_to_cylindrical_rcpp(NumericVector img, double fl_FF_mm, double zoom = 1.0) {
     IntegerVector dims = img.attr("dim");
     if (dims.size() != 3) {
         stop("Input image must be a 3D array (M x N x 3).");
@@ -16,7 +16,10 @@ NumericVector linear_to_cylindrical_rcpp(NumericVector img, double fl_FF_mm) {
     
     double diag_mm = std::sqrt(36.0 * 36.0 + 24.0 * 24.0); 
     double diag_pixel = std::sqrt((double)H_in * H_in + (double)W_in * W_in);
-    double f_pixel = fl_FF_mm * (diag_pixel / diag_mm);
+    
+    // Diferenciamos la focal de la imagen de entrada y la de salida aplicando el zoom
+    double f_pixel_in = fl_FF_mm * (diag_pixel / diag_mm);
+    double f_pixel_out = f_pixel_in * zoom;
     
     int H_out = H_in;
     int W_out = W_in;
@@ -29,9 +32,10 @@ NumericVector linear_to_cylindrical_rcpp(NumericVector img, double fl_FF_mm) {
     NumericVector out_img(Dimension(H_out, W_out, channels));
     
     // Pre-calculate row-dependent Y values to avoid recalculating in the outer loop
+    // Utilizamos f_pixel_out para establecer las coordenadas geométricas de salida
     std::vector<double> Y_vals(H_out);
     for (int r_out = 0; r_out < H_out; ++r_out) {
-        Y_vals[r_out] = (r_out - cy_out) / f_pixel;
+        Y_vals[r_out] = (r_out - cy_out) / f_pixel_out;
     }
     
     // Raw pointers for fast, direct contiguous memory access (bypasses Rcpp operator overhead)
@@ -46,7 +50,8 @@ NumericVector linear_to_cylindrical_rcpp(NumericVector img, double fl_FF_mm) {
     for (int c_out = 0; c_out < W_out; ++c_out) {
         
         // --- Column Invariants Hoisted Here ---
-        double theta = (c_out - cx_out) / f_pixel;
+        // Utilizamos f_pixel_out para determinar los ángulos visuales en la proyección cilíndrica
+        double theta = (c_out - cx_out) / f_pixel_out;
         double X = std::sin(theta);
         double Z = std::cos(theta);
         
@@ -62,7 +67,9 @@ NumericVector linear_to_cylindrical_rcpp(NumericVector img, double fl_FF_mm) {
         }
         
         double inv_Z = 1.0 / Z;
-        double c_in = f_pixel * (X * inv_Z) + cx_in;
+        
+        // Trazamos el rayo de vuelta hacia la imagen original plana usando f_pixel_in
+        double c_in = f_pixel_in * (X * inv_Z) + cx_in;
         
         int c0 = std::floor(c_in);
         int c1 = c0 + 1;
@@ -89,7 +96,8 @@ NumericVector linear_to_cylindrical_rcpp(NumericVector img, double fl_FF_mm) {
         for (int r_out = 0; r_out < H_out; ++r_out) {
             
             // Compute vertical projection using the pre-calculated Y data
-            double r_in = f_pixel * (Y_vals[r_out] * inv_Z) + cy_in;
+            // Trazamos el rayo vertical en la imagen de entrada con f_pixel_in
+            double r_in = f_pixel_in * (Y_vals[r_out] * inv_Z) + cy_in;
             
             int r0 = std::floor(r_in);
             int r1 = r0 + 1;
