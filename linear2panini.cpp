@@ -22,7 +22,8 @@ NumericVector linear_to_panini_rcpp(NumericVector img, double fl_FF_mm, double d
     double diag_mm = std::sqrt(36.0 * 36.0 + 24.0 * 24.0); 
     double diag_pixel = std::sqrt((double)H_in * H_in + (double)W_in * W_in);
     
-	// Diferenciamos la focal de la imagen de entrada y la de salida aplicando el zoom
+    // Diferenciamos la focal de la imagen original plana (in) de la focal proyectada con zoom (out)
+    // Utilizamos f_pixel_out para establecer las coordenadas geométricas de salida
     double f_pixel_in = fl_FF_mm * (diag_pixel / diag_mm);
     double f_pixel_out = f_pixel_in * zoom;
     
