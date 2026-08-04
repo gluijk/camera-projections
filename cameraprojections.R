@@ -248,7 +248,7 @@ sourceCpp("stereographic2linear.cpp")
 
 
 #######################################
-# EXERCISES (3)
+# EXERCISES (4)
 
 
 # Example 1: landscape with Laowa 12mm FF (Dpreview)
@@ -322,9 +322,35 @@ writeTIFF(stereographic_12mm, "spheres12mm_stereographic.tif")
 
 
 
+# Example 4: bikepark with Samsung S20 FE UWA (13mm eq.)
+img=readTIFF("bikepark.tif")
+# img=add_grid(img, n_gridx = 12)
+# writeTIFF(img, "laowa12mm_grid.tif")
+
+cylindrical_13mm <- linear_to_cylindrical_rcpp(img, fl_FF_mm = 13)
+equirectangular_13mm <- linear_to_equirectangular_rcpp(img, fl_FF_mm = 13)
+mercator_13mm <- linear_to_mercator_rcpp(img, fl_FF_mm = 13)
+panini_13mm <- linear_to_panini_rcpp(img, fl_FF_mm = 13)
+orthographic_13mm <- linear_to_orthographic_rcpp(img, fl_FF_mm = 13)
+spherical_13mm <- linear_to_spherical_rcpp(img, fl_FF_mm = 13)
+stereographic_13mm <- linear_to_stereographic_rcpp(img, fl_FF_mm = 13)
+
+writeTIFF(cylindrical_13mm, "bikepark_cylindrical.tif")
+writeTIFF(equirectangular_13mm, "bikepark_equirectangular.tif")
+writeTIFF(mercator_13mm, "bikepark_mercator.tif")
+writeTIFF(panini_13mm, "bikepark_panini.tif")
+writeTIFF(orthographic_13mm, "bikepark_orthographic.tif")
+writeTIFF(spherical_13mm, "bikepark_spherical.tif")
+writeTIFF(stereographic_13mm, "bikepark_stereographic.tif")
+
+
+
+
+
+
 
 #######################################
-# USE CASES (3)
+# USE CASES (4)
 
 # Use case 1: Cervino 18mm (picture by Javier Camacho Gimeno)
 img=readTIFF("cervino18mm.tif")
@@ -353,3 +379,14 @@ img=readTIFF("street12mm.tif")
 
 panini_12mm <- linear_to_panini_rcpp(img, fl_FF_mm = 12, d = 0.7)  # d = 1 too much compression
 writeTIFF(panini_12mm, "street12mm_panini.tif")
+
+
+
+# Use case 4: 3D videogame (Mordhau, FOV=101º, 21:9, 16.1mm eq.)
+img=readTIFF("mordhau.tif")
+# img=add_grid(img, n_gridx = 12)
+# writeTIFF(img, "laowa12mm_grid.tif")
+
+mordhau_16mm <- linear_to_panini_rcpp(img, fl_FF_mm = 16.1)
+writeTIFF(mordhau_16mm, "mordhau_panini.tif")
+
