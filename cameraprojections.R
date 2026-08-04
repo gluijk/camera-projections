@@ -7,7 +7,7 @@ library(Rcpp)
 library(tiff)
 
 
-# Auxiliar functions (the projection transformation equations are implemented in cpp files)
+# Helper functions (the projection transformation equations themselves are implemented in cpp files)
 
 # Generate equispaced circles
 circles_matrix <- function(NUMX, NUMY, DIMX, R = 1, value.circle = 0.7, value.background = 0.3)
@@ -248,7 +248,7 @@ sourceCpp("stereographic2linear.cpp")
 
 
 #######################################
-# EXERCISES (4)
+# EXAMPLES (4)
 
 
 # Example 1: landscape with Laowa 12mm FF (Dpreview)
@@ -342,9 +342,6 @@ writeTIFF(panini_13mm, "bikepark_panini.tif")
 writeTIFF(orthographic_13mm, "bikepark_orthographic.tif")
 writeTIFF(spherical_13mm, "bikepark_spherical.tif")
 writeTIFF(stereographic_13mm, "bikepark_stereographic.tif")
-
-
-
 
 
 
