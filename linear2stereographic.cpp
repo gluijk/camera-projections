@@ -119,7 +119,7 @@ NumericVector linear_to_stereographic_rcpp(NumericVector img, double fl_FF_mm, d
                 double p11 = p_in[r1 + in_c1_stride + ch_offset];
                 
                 double interpolated_val = one_minus_delta_r * (one_minus_delta_c * p00 + delta_c * p10) +
-                    delta_r           * (one_minus_delta_c * p01 + delta_c * p11);
+										  delta_r           * (one_minus_delta_c * p01 + delta_c * p11);
                 
                 p_out[out_pixel_idx + ch * out_channel_stride] = interpolated_val;
             }
